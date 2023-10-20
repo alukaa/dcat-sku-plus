@@ -9,7 +9,7 @@ class SkuAttribute extends Model
 {
     use HasDateTimeFormatter;
 
-    public $table = 'sku_attribute';
+    public $table = 'jx_sku_attribute';
 
     protected $casts = [
         'attr_value' => 'json'

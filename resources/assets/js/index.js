@@ -64,7 +64,7 @@
         // 删除图片
         _this.wrap.find('.sku_edit_wrap tbody').on('click', '.sku_img .icon-x', function () {
             let that = $(this);
-            Dcat.confirm('确认要删除图片吗？', null, function () {
+            Dcat.confirm('確定要刪除圖片嗎？', null, function () {
                 $.ajax({
                     type: "POST",
                     url: _this.deleteUrl,
@@ -200,9 +200,9 @@
             attr_names.forEach(function (attr_name) {
                 thead_html += '<th style="width: 80px">' + attr_name + '</th>'
             });
-            thead_html += '<th data-field="pic" style="width: 102px">图片 </th>';
-            thead_html += '<th data-field="stock">库存 <input type="text" class="form-control"></th>';
-            thead_html += '<th data-field="price">价格 <input type="text" class="form-control"></th>';
+            thead_html += '<th data-field="pic" style="width: 102px">圖片 </th>';
+            thead_html += '<th data-field="stock">庫存 <input type="text" class="form-control"></th>';
+            thead_html += '<th data-field="price">價格 <input type="text" class="form-control"></th>';
 
             params.forEach((v) => {
                 thead_html += '<th data-field="' + v['field'] + '">' + v['name'] + '<input  type="text" class="form-control"></th>'
@@ -434,7 +434,7 @@
         if (innerHtml.length > 0 && _this.currentSkuId == '') {
             html += ' selected="selected"';
         }
-        html += '><option value="input">手动输入</option>';
+        html += '><option value="input">手動輸入</option>';
         skuAttributesArray.forEach(function (v, i) {
             html += ' <option value="' + v.attr_type + '" data-idx="' + i + '"';
             if (innerHtml.length > 0 && v.id == _this.currentSkuId) {

@@ -14,8 +14,8 @@
                 <table class="table table-bordered">
                     <thead>
                     <tr>
-                        <th style="width: 200px">规格名</th>
-                        <th>规格值</th>
+                        <th style="width: 200px">規格名</th>
+                        <th>規格值</th>
                         <th style="width: 100px">操作</th>
                     </tr>
                     </thead>
@@ -23,7 +23,7 @@
                     <tr>
                         <td>
                             <select class="form-control _normal_ attribute_selector">
-                                <option value="input">手动输入</option>
+                                <option value="input">手動輸入</option>
                                 @foreach($skuAttributes as $key => &$attribute)
                                     <option value="{{$attribute->attr_type}}" data-idx="{{$key}}">{{$attribute->attr_name}}</option>
                                 @endforeach
