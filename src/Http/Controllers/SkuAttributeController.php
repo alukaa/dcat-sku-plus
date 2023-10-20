@@ -37,28 +37,29 @@ class SkuAttributeController extends AdminController
     protected function grid()
     {
         return Grid::make(new SkuAttribute(), function (Grid $grid) {
-            $grid->model()->orderByDesc('id');
             $grid->id->sortable();
-            $grid->column('attr_name', '熟悉名稱');
+            $grid->column('attr_name_hk', '屬性名稱-繁體');
+            $grid->column('attr_name_en', '屬性名稱-英文');
             $grid->column('attr_type', '屬性類型')
                 ->using($this->attrType)
                 ->label([
                     'checkbox' => 'info',
                     'radio' => 'primary'
                 ]);
-            $grid->column('sort', '排序');
-            $grid->column('attr_value', '屬性值')->explode()->label();
 
-            $grid->created_at;
-            $grid->updated_at->sortable();
+            $grid->column('valueInfoHk', '屬性值-繁體')->display(function () {
+                return $this->valueInfo->sortBy('sort')->pluck('value_hk')->toArray();
+            })->label();
+            $grid->column('valueInfoEn', '屬性值-英文')->display(function () {
+                return $this->valueInfo->sortBy('sort')->pluck('value_en')->toArray();
+            })->label();
+            $grid->column('sort', '排序');
+
 
             $grid->disableViewButton();
 
-            $grid->filter(function (Grid\Filter $filter) {
-                $filter->equal('id');
-                $filter->like('attr_name', '屬性名稱');
-                $filter->equal('attr_type', '屬性類型')->select($this->attrType);
-            });
+            $grid->quickSearch('attr_name_hk')->placeholder('輸入規格名稱繁體搜索...');
+            
         });
     }
 
@@ -84,15 +85,29 @@ class SkuAttributeController extends AdminController
      */
     protected function form()
     {
-        return Form::make(new SkuAttribute(), function (Form $form) {
+        $builder = SkuAttribute::with('valueInfo');
+        return Form::make($builder, function (Form $form) {
             $form->display('id');
-            $form->text('attr_name', '屬性名稱')->required();
+            $form->text('attr_name_hk', '屬性名稱-繁體')->required();
+            $form->text('attr_name_en', '屬性名稱-英文')->required();
             $form->radio('attr_type', '屬性類型')->options($this->attrType)->required();
-            $form->list('attr_value', '屬性值');
             $form->number('sort', '排序')->default(0)->min(0)->max(100);
 
-            $form->display('created_at');
-            $form->display('updated_at');
+            $form->hasMany('valueInfo', '屬性值', function (Form\NestedForm $form) {
+                $form->column(1, function (Form\NestedForm $form) {
+                });
+                $form->column(3, function (Form\NestedForm $form) {
+                    $form->text('value_hk', '屬性值-繁體')->required();
+                });
+                $form->column(3, function (Form\NestedForm $form) {
+                    $form->text('value_en', '屬性值-英文')->required();
+                });
+                $form->column(3, function (Form\NestedForm $form) {
+                    $form->number('sort', '排序')->required();
+                });
+                $form->width(8, 4);
+            });
+
 
             $form->disableViewButton();
             $form->disableViewCheck();

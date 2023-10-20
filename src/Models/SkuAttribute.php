@@ -2,16 +2,20 @@
 
 namespace Dcat\Admin\Extension\DcatSkuPlus\Models;
 
+use App\Models\LocalizedModel;
 use Dcat\Admin\Traits\HasDateTimeFormatter;
 use Illuminate\Database\Eloquent\Model;
 
-class SkuAttribute extends Model
+class SkuAttribute extends LocalizedModel
 {
     use HasDateTimeFormatter;
 
-    public $table = 'jx_sku_attribute';
+    public $table = 'jx_goods_sku_attribute';
 
-    protected $casts = [
-        'attr_value' => 'json'
-    ];
+    protected $localizable = ['attr_name'];
+
+    public function valueInfo()
+    {
+        return $this->hasMany(SkuValue::class, 'attr_id', 'id');
+    }
 }

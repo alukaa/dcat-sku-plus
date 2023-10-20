@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('jx_goods_sku_attribute', function (Blueprint $table) {
+        Schema::create('jx_goods_sku_value', function (Blueprint $table) {
             $table->id();
-            $table->string('attr_name_hk')->comment('規格名稱-繁體');
-            $table->string('attr_name_en')->comment('規格名稱-英文');
-            $table->enum('attr_type', ['checkbox', 'radio'])->comment('規格類型');
+            $table->integer('attr_id')->comment('規格');
+            $table->string('value_hk')->comment('規格值-英文');
+            $table->string('value_en')->comment('規格值-英文');
             $table->tinyInteger('sort')->default(0)->comment('排序');
             $table->timestamps();
         });
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('jx_goods_sku_attribute');
+        Schema::dropIfExists('jx_goods_sku_value');
     }
 };

@@ -17,7 +17,25 @@ class SkuField extends Field
 
         $uploadUrl = DcatSkuPlusServiceProvider::setting('sku_plus_img_upload_url') ?: '/admin/sku-image-upload';
         $deleteUrl = DcatSkuPlusServiceProvider::setting('sku_plus_img_remove_url') ?: '/admin/sku-image-remove';
-        $skuAttributes = SkuAttribute::orderBy('sort', 'desc')->get();
+        $attrList = SkuAttribute::with('valueInfo')->orderBy('sort', 'desc')->get();
+
+        $skuAttributes = [];
+        foreach ($attrList as $item) {
+            $valueList = [];
+            foreach ($item->valueInfo as $foo) {
+                $valueList[] = [
+                    'id'      => $foo->id,
+                    'attr_id' => $foo->attr_id,
+                    'value'   => $foo->value
+                ];
+            }
+            $skuAttributes[] = [
+                'id'         => $item->id,
+                'attr_type'  => $item->attr_type,
+                'attr_name'  => $item->attr_name,
+                'attr_value' => $valueList
+            ];
+        }
 
         $this->script = <<< EOF
         window.DemoSku = new JadeKunSKU('{$this->getElementClassSelector()}');

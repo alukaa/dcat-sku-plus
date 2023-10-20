@@ -9,6 +9,7 @@
         this.currentAttributeValue = [];
         this.currentSkuId = '';
         this.skuAttr = {};
+        this.selectAttr = [];
         this.init();
     }
 
@@ -163,7 +164,8 @@
                 case 'radio':
                     scopeAttrName = tr.find('td:eq(0) select:eq(0)').find("option:selected").text();
                     tr.find('td:eq(1) input[type="' + scopeAttrType + '"]:checked').each(function (i, v) {
-                        attr_val.push($(v).val());
+                        var detailValue = JSON.parse(decodeURIComponent($(v).attr('data-value')));
+                        attr_val.push(detailValue);
                     });
                     break;
                 default:
@@ -230,9 +232,9 @@
                 tbody_html += '<tr>';
                 sku_item.forEach(function (attr_val, index) {
                     let attr_name = attr_names[index];
-                    tbody_html += '<td data-field="' + attr_name + '" class="attr-name">' + attr_val + '</td>';
+                    tbody_html += '<td data-field="' + attr_val.id + '" class="attr-name">' + attr_val.value + '</td>';
                 });
-                tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload"><i class="feather icon-upload-cloud"></i></span></div></td>';
+                tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload" title="繁體圖片"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片"><i class="feather icon-upload-cloud"></i></span></div></td>';
                 tbody_html += '<td data-field="stock"><input value="" type="text" class="form-control"></td>';
                 tbody_html += '<td data-field="price"><input value="" type="text" class="form-control"></td>';
 
@@ -364,9 +366,21 @@
     };
 
     SKU.prototype.changeAttrValueHtml = function (e, attrType) {
+        let _this = this;
         let html = this.getAttributeHtml(attrType, this.skuAttr);
-        attrType != 'input' ? e.next('input').hide() : e.next('input').show();
+        if (!attrType) {
+            var trLen = $(e).closest('tr').parent().find('tr');
+            if (trLen.length > 1) {
+                $(e).closest('tr').remove();
+                _this.getSkuAttr()
+            } else {
+                e.parent().next('td').find('.sku_attr_val_wrap').html('');
+                $('.sku_edit_wrap').html('<table class="table table-bordered"><thead> </thead><tbody></tbody></table>')
+            }
+            return;
+        }
         e.parent().next('td').find('.sku_attr_val_wrap').html(html);
+        _this.selectAttr.push(this.skuAttr.id);
     };
 
     SKU.prototype.getAttributeHtml = function (attrType, attribute) {
@@ -377,7 +391,8 @@
                 if (attribute.attr_value.length > 0) {
                     html += '<div class="d-flex flex-wrap">';
                     attribute.attr_value.forEach(function (v) {
-                        html += '<div class="vs-checkbox-con vs-checkbox-primary" style="margin-right: 16px"><input value="' + v + '" class="Dcat_Admin_Widgets_Checkbox" type="checkbox" name="' + attribute.attr_name + '"';
+                        var vDetail = encodeURIComponent(JSON.stringify(v));
+                        html += '<div class="vs-checkbox-con vs-checkbox-primary" style="margin-right: 16px"><input value="' + v.id + '" class="Dcat_Admin_Widgets_Checkbox" type="checkbox" name="' + v.value + '" data-value="'+ vDetail +'"';
                         if (_this.currentAttributeValue.indexOf(v) >= 0) {
                             html += ' checked="checked"';
                         }
@@ -386,7 +401,7 @@
                             '<i class="vs-icon feather icon-check"></i>' +
                             '</span>' +
                             '</span>' +
-                            '<span>' + v + '</span>' +
+                            '<span>' + v.value + '</span>' +
                             '</div>'
                     });
                     html += '</div>';
@@ -396,8 +411,9 @@
                 if (attribute.attr_value.length > 0) {
                     html += '<div class="d-flex flex-wrap">';
                     attribute.attr_value.forEach(function (v) {
+                        var vDetail = encodeURIComponent(JSON.stringify(v));
                         html += '<div class="vs-radio-con vs-radio-primary" style="margin-right: 16px">' +
-                            '<input value="' + v + '" class="Dcat_Admin_Widgets_Radio" type="radio" name="' + attribute.attr_name + '"';
+                            '<input value="' + v.id + '" class="Dcat_Admin_Widgets_Radio" type="radio" name="' + v.value + '" data-value="'+ vDetail +'"';
                         if (_this.currentAttributeValue.indexOf(v) >= 0) {
                             html += ' checked="checked"';
                         }
@@ -405,7 +421,7 @@
                             '<span class="vs-radio--border"></span>' +
                             '<span class="vs-radio--circle"></span>' +
                             '</span>' +
-                            '<span>' + v + '</span>' +
+                            '<span>' + v.value + '</span>' +
                             '</div>';
                     });
                     html += '</div>';
@@ -434,17 +450,17 @@
         if (innerHtml.length > 0 && _this.currentSkuId == '') {
             html += ' selected="selected"';
         }
-        html += '><option value="input">手動輸入</option>';
+        html += '><option value="">請選擇規格...</option>';
         skuAttributesArray.forEach(function (v, i) {
-            html += ' <option value="' + v.attr_type + '" data-idx="' + i + '"';
-            if (innerHtml.length > 0 && v.id == _this.currentSkuId) {
-                html += ' selected="selected"';
+            if (!_this.selectAttr.includes(v.id)) {
+                html += ' <option value="' + v.attr_type + '" data-idx="' + i + '"';
+                if (innerHtml.length > 0 && v.id == _this.currentSkuId) {
+                    html += ' selected="selected"';
+                }
+                html += '>' + v.attr_name + '</option>'
             }
-            html += '>' + v.attr_name + '</option>'
         });
-        html += '</select><input type="text" class="form-control input_attr_name"></td><td><div class="sku_attr_val_wrap">' +
-            (innerHtml.length > 0 ? innerHtml : this.getAttributeHtml('input', this.skuAttr)) +
-            '</div></td><td><span class="btn btn-default Js_remove_attr_name">移除</span></td></tr>';
+        html += '</select></td><td><div class="sku_attr_val_wrap"></div></td><td><span class="btn btn-default Js_remove_attr_name">移除</span></td></tr>';
 
         return html;
     };
