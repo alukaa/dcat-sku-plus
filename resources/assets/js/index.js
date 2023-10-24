@@ -57,6 +57,7 @@
         // 绑定input变化事件
         _this.wrap.find('.sku_attr_key_val tbody').on('change', 'input', _this.getSkuAttr.bind(_this));
         _this.wrap.find('.sku_edit_wrap tbody').on('keyup', 'input', _this.processSku.bind(_this));
+        _this.wrap.find('.sku_edit_wrap tbody').on('change', 'input[type="radio"]', _this.processSku.bind(_this));
 
         // SKU图片上传
         _this.wrap.find('.sku_edit_wrap tbody').on('click', '.Js_sku_upload', function () {
@@ -209,15 +210,36 @@
             // 渲染表头
             let thead_html = '<tr>';
             attr_names.forEach(function (attr_name) {
-                thead_html += '<th style="width: 80px">' + attr_name + '</th>'
+                thead_html += '<th style="width: 100px">' +
+                                  '<div class="vs-radio-con vs-radio-primary" style="width: fit-content;margin: 0 auto;" title="顯示規格圖片">' +
+                                    '<input value="0" name="switch-format-image" class="field_sex _normal_ Dcat_Admin_Widgets_Radio" type="radio">' +
+                                    '<span class="vs-radio vs-radio-">' +
+                                        '<span class="vs-radio--border"></span>' +
+                                        '<span class="vs-radio--circle"></span>' +
+                                    '</span>' +
+                                    '<span>'+ attr_name +'</span>' +
+                                  '</div>' +
+                              '</th>';
             });
             thead_html += '<th data-field="pic" style="width: 102px">圖片 </th>';
             thead_html += '<th data-field="stock">庫存 <input type="text" class="form-control"></th>';
             thead_html += '<th data-field="price">價格 <input type="text" class="form-control"></th>';
 
             params.forEach((v) => {
-                thead_html += '<th data-field="' + v['field'] + '">' + v['name'] + '<input  type="text" class="form-control"></th>'
-            })
+                switch (v.type) {
+                    case 'input': {
+                        thead_html += '<th data-field="' + v['field'] + '">' + v['name'] + '<input  type="text" class="form-control"></th>';
+                        break;
+                    }
+                    case 'radio': {
+                        thead_html += '<th data-field="' + v['field'] + '" style="width: 100px;">' + v['name'] + '</th>';
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            });
 
             thead_html += '</tr>';
             _this.wrap.find('.sku_edit_wrap thead').html(thead_html);
@@ -237,10 +259,10 @@
 
             // 根据计算的笛卡尔积渲染tbody
             let tbody_html = '';
+            var loopIndex = 0;
             cartesianProductOf.forEach(function (sku_item) {
                 tbody_html += '<tr>';
                 sku_item.forEach(function (attr_val, index) {
-                    let attr_name = attr_names[index];
                     tbody_html += '<td data-field="' + attr_val.id + '" class="attr-name">' + attr_val.value + '</td>';
                 });
                 tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span></div></td>';
@@ -248,7 +270,29 @@
                 tbody_html += '<td data-field="price"><input value="" type="text" class="form-control"></td>';
 
                 params.forEach((v) => {
-                    tbody_html += '<td data-field="' + v['field'] + '"><input value="' + v['default'] + '" type="text" class="form-control"></td>';
+                    switch (v.type) {
+                        case 'input': {
+                            tbody_html += '<td data-field="' + v['field'] + '"><input value="' + v['default'] + '" type="text" class="form-control"></td>';
+                            break;
+                        }
+                        case 'radio': {
+                            var isChecked = loopIndex === 0 ? 'checked="checked"' : '';
+                            tbody_html += '<td data-field="' + v['field'] + '">' +
+                                            '<div class="vs-radio-con vs-radio-primary" style="width: fit-content;margin: 15px auto 0;" title="'+ v['name'] +'">' +
+                                                '<input value="0" name="'+ v['field'] +'" class="field_sex _normal_ Dcat_Admin_Widgets_Radio" type="radio" '+ isChecked +'>' +
+                                                '<span class="vs-radio vs-radio-">' +
+                                                    '<span class="vs-radio--border"></span>' +
+                                                    '<span class="vs-radio--circle"></span>' +
+                                                '</span>' +
+                                            '</div>' +
+                                           '</td>';
+                            loopIndex += 1;
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
                 })
                 tbody_html += '</tr>'
             });
@@ -310,8 +354,20 @@
         let _this = this;
         let sku_json = {};
         sku_json.type = _this.wrap.find('.sku_attr_select .btn.btn-success').attr('data-type');
+
+        var switchShowPic = $('input[name="switch-format-image"]');
+        var showAttrs = Object.values(_this.attrs);
+        sku_json.attrs = [];
+        for (var x = 0; x < showAttrs.length;x++) {
+            var currentSwitchItem = $(switchShowPic[x]);
+            var isSwitch = 0;
+            if (currentSwitchItem.length && currentSwitchItem.is(':checked')) {
+                isSwitch = 1;
+            }
+            sku_json.attrs.push({show_pic: isSwitch, list: showAttrs[x]});
+        }
+
         // 多规格
-        sku_json.attrs = Object.values(_this.attrs);
         let sku = [];
         _this.wrap.find('.sku_edit_wrap tbody tr').each(function () {
             let tr = $(this);
@@ -339,7 +395,21 @@
                     if (td.hasClass('attr-name')) {
                         item_sku.values.push(field)
                     }
-                    item_sku[field] = td.find('input').val() || td.text();
+                    var currentInput = td.find('input');
+                    switch (currentInput.attr('type')) {
+                        case 'text': {
+                            item_sku[field] = currentInput.val() || td.text();
+                            break;
+                        }
+                        case 'radio': {
+                            item_sku[field] = currentInput.is(':checked');
+                            break;
+                        }
+                        default: {
+                            item_sku[field] = td.text();
+                            break;
+                        }
+                    }
                 }
             });
             sku.push(item_sku);
@@ -388,6 +458,7 @@
         let html = this.getAttributeHtml(attrType, this.skuAttr);
         if (!attrType) {
             var trLen = $(e).closest('tr').parent().find('tr');
+
             if (trLen.length > 1) {
                 $(e).closest('tr').remove();
                 _this.getSkuAttr()
@@ -396,9 +467,48 @@
                 $('.sku_edit_wrap').html('<table class="table table-bordered"><thead> </thead><tbody></tbody></table>')
             }
 
+            // 当前是否是带添加按钮的像
+            var isAdd = $(e).closest('tr').find('td:last-child').find('.Js_add_attr_name');
+            if (isAdd.length) {
+                if (trLen.length >= 2) {
+                    trLen.eq(1).find('td:last-child').html('<span class="btn btn-primary Js_add_attr_name">添加</span>');
+
+                    // 重新绑定添加事件
+                    _this.wrap.find('.Js_add_attr_name').off('click').on('click', function () {
+                        _this.wrap.find('.sku_attr_key_val tbody').append(_this.getHtml());
+                    });
+                }
+            }
+
         } else {
             e.parent().next('td').find('.sku_attr_val_wrap').html(html);
-            _this.selectAttr.push(this.skuAttr.id);
+            var selectList = $('select.attribute_selector');
+
+            _this.selectAttr = [];
+            for (var x = 0; x < selectList.length; x++) {
+                var currentSelect = $(selectList[x]).find('option:selected').attr('data-idx');
+                if (currentSelect === undefined || currentSelect === 'undefined') {
+                    continue;
+                }
+                _this.selectAttr.push(_this.skuAttributes[currentSelect].id)
+            }
+
+            for (var b = 0; b < selectList.length; b++) {
+                var currentVal = $(selectList[b]).find('option:selected').attr('data-idx');
+                var allOption = $(selectList[b]).find('option');
+                for (var c = 0; c < allOption.length; c++) {
+                    var currentIdx = $(allOption[c]).attr('data-idx');
+                    if (currentIdx === undefined || currentIdx === 'undefined') {
+                        continue;
+                    }
+                    var currentSkuId = _this.skuAttributes[currentIdx].id;
+                    if (_this.selectAttr.includes(currentSkuId) && currentIdx !== currentVal) {
+                        $(allOption[c]).attr('disabled', 'disabled');
+                    } else {
+                        $(allOption[c]).removeAttr('disabled');
+                    }
+                }
+            }
         }
 
         _this.syncData();
@@ -408,7 +518,6 @@
         var _this = this;
         // 已有的选择项进行select修改
         var selectAttr = [];
-        var selectIndex = [];
         var selectList = $('.sku_attr_key_val').find('select');
         for (var i = 0; i < selectList.length; i++) {
             // 当前选择的值
@@ -416,28 +525,10 @@
             if (dataIndex >= 0) {
                 dataIndex = parseInt(dataIndex);
                 selectAttr.push(_this.skuAttributes[dataIndex].id);
-                selectIndex.push(dataIndex);
             }
         }
         _this.selectAttr = selectAttr;
         _this.getSkuAttr();
-
-        // 继续遍历
-        for (var j = 0; j < selectList.length; j++) {
-            // 当前选择的值
-            var dataIndex = $(selectList[j]).find('option:selected').attr('data-idx');
-            if (dataIndex >= 0) {
-                dataIndex = parseInt(dataIndex);
-                var childOption = '<option value="">請選擇規格</option>';
-                for(var m = 0; m < _this.skuAttributes.length; m++) {
-                    if (m === dataIndex || !selectIndex.includes(m)) {
-                        var isSelected = m === dataIndex ? 'selected' : '';
-                        childOption += '<option value="checkbox" data-idx="'+ m +'" '+ isSelected +'>'+ _this.skuAttributes[m].attr_name +'</option>';
-                    }
-                }
-                $(selectList[j]).html(childOption);
-            }
-        }
     };
 
 
@@ -510,13 +601,12 @@
         }
         html += '><option value="">請選擇規格...</option>';
         skuAttributesArray.forEach(function (v, i) {
-            if (!_this.selectAttr.includes(v.id)) {
-                html += ' <option value="' + v.attr_type + '" data-idx="' + i + '"';
-                if (innerHtml.length > 0 && v.id == _this.currentSkuId) {
-                    html += ' selected="selected"';
-                }
-                html += '>' + v.attr_name + '</option>'
+            var isDisabled = _this.selectAttr.includes(v.id) ? 'disabled="disabled"' : ''
+            html += ' <option value="' + v.attr_type + '" data-idx="' + i + '" '+ isDisabled +'';
+            if (innerHtml.length > 0 && v.id == _this.currentSkuId) {
+                html += ' selected="selected"';
             }
+            html += '>' + v.attr_name + '</option>'
         });
         html += '</select></td><td><div class="sku_attr_val_wrap"></div></td><td><span class="btn btn-default Js_remove_attr_name">移除</span></td></tr>';
 

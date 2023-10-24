@@ -109,3 +109,7 @@
 .sku_wrap .sku_img img {
     width: 100%;
 }
+
+.sku_wrap .attribute_selector option:disabled {
+    color: #d1d1d1;
+}

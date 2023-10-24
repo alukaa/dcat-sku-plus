@@ -37,6 +37,7 @@
                             <span class="btn btn-primary Js_add_attr_name">添加</span>
                         </td>
                     </tr>
+                    <div class="tips" style="font-size: 10px;opacity: 0.7;">*只有選中顯示規格圖片單選框並且上傳規格圖片,商品對應規格組才會顯示圖片</div>
                     </tbody>
                 </table>
             </div>
