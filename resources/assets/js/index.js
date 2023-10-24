@@ -51,6 +51,7 @@
         _this.wrap.find('.sku_attr_key_val').on('click', '.Js_remove_attr_name', function () {
             $(this).closest('tr').remove();
             _this.getSkuAttr()
+            _this.syncData();
         });
 
         // 绑定input变化事件
@@ -77,6 +78,14 @@
                         let method = res.code == 200 ? 'success' : 'error';
                         Dcat[method](res.message);
                         if (res.code == 200) {
+                            // 补全剩余上传按钮
+                            var dataType = that.data('type');
+                            if (dataType === 'en') {
+                                that.parent().after('<span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span>');
+                            } else {
+                                that.parent().before('<span class="Js_sku_upload" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span>');
+                            }
+
                             that.parent('div').remove();
                             _this.processSku();
                         }
@@ -234,7 +243,7 @@
                     let attr_name = attr_names[index];
                     tbody_html += '<td data-field="' + attr_val.id + '" class="attr-name">' + attr_val.value + '</td>';
                 });
-                tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload" title="繁體圖片"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片"><i class="feather icon-upload-cloud"></i></span></div></td>';
+                tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span></div></td>';
                 tbody_html += '<td data-field="stock"><input value="" type="text" class="form-control"></td>';
                 tbody_html += '<td data-field="price"><input value="" type="text" class="form-control"></td>';
 
@@ -302,7 +311,7 @@
         let sku_json = {};
         sku_json.type = _this.wrap.find('.sku_attr_select .btn.btn-success').attr('data-type');
         // 多规格
-        sku_json.attrs = _this.attrs;
+        sku_json.attrs = Object.values(_this.attrs);
         let sku = [];
         _this.wrap.find('.sku_edit_wrap tbody tr').each(function () {
             let tr = $(this);
@@ -317,12 +326,19 @@
                         skuImg.each(function (i, v) {
                             pic.push({
                                 short_url: $(v).find('.icon-x').data('path'),
-                                full_url: $(v).find('img').attr('src')
+                                full_url: $(v).find('img').attr('src'),
+                                type: $(v).find('i').attr('data-type')
                             });
                         });
                         item_sku['pic'] = pic;
                     }
                 } else {
+                    if (item_sku.values === undefined) {
+                        item_sku.values = [];
+                    }
+                    if (td.hasClass('attr-name')) {
+                        item_sku.values.push(field)
+                    }
                     item_sku[field] = td.find('input').val() || td.text();
                 }
             });
@@ -358,7 +374,9 @@
                 },
                 processData: false, //告诉jQuery不要去处理发送的数据
                 success: function (res) {
-                    obj.before('<div class="img"><img src="' + res.full_url + '"/><i class="feather icon-x" data-path="' + res.short_url + '"></i></div>');
+                    var dataType = obj.attr('data-type');
+                    obj.before('<div class="img"><img src="' + res.full_url + '"/><i class="feather icon-x" data-path="' + res.short_url + '" data-type="'+ dataType +'"></i></div>');
+                    obj.remove();
                     _this.processSku();
                 }
             })
@@ -377,11 +395,51 @@
                 e.parent().next('td').find('.sku_attr_val_wrap').html('');
                 $('.sku_edit_wrap').html('<table class="table table-bordered"><thead> </thead><tbody></tbody></table>')
             }
-            return;
+
+        } else {
+            e.parent().next('td').find('.sku_attr_val_wrap').html(html);
+            _this.selectAttr.push(this.skuAttr.id);
         }
-        e.parent().next('td').find('.sku_attr_val_wrap').html(html);
-        _this.selectAttr.push(this.skuAttr.id);
+
+        _this.syncData();
     };
+
+    SKU.prototype.syncData = function () {
+        var _this = this;
+        // 已有的选择项进行select修改
+        var selectAttr = [];
+        var selectIndex = [];
+        var selectList = $('.sku_attr_key_val').find('select');
+        for (var i = 0; i < selectList.length; i++) {
+            // 当前选择的值
+            var dataIndex = $(selectList[i]).find('option:selected').attr('data-idx');
+            if (dataIndex >= 0) {
+                dataIndex = parseInt(dataIndex);
+                selectAttr.push(_this.skuAttributes[dataIndex].id);
+                selectIndex.push(dataIndex);
+            }
+        }
+        _this.selectAttr = selectAttr;
+        _this.getSkuAttr();
+
+        // 继续遍历
+        for (var j = 0; j < selectList.length; j++) {
+            // 当前选择的值
+            var dataIndex = $(selectList[j]).find('option:selected').attr('data-idx');
+            if (dataIndex >= 0) {
+                dataIndex = parseInt(dataIndex);
+                var childOption = '<option value="">請選擇規格</option>';
+                for(var m = 0; m < _this.skuAttributes.length; m++) {
+                    if (m === dataIndex || !selectIndex.includes(m)) {
+                        var isSelected = m === dataIndex ? 'selected' : '';
+                        childOption += '<option value="checkbox" data-idx="'+ m +'" '+ isSelected +'>'+ _this.skuAttributes[m].attr_name +'</option>';
+                    }
+                }
+                $(selectList[j]).html(childOption);
+            }
+        }
+    };
+
 
     SKU.prototype.getAttributeHtml = function (attrType, attribute) {
         let _this = this;
