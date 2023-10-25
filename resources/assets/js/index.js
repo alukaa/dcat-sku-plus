@@ -1,4 +1,4 @@
-(function () {
+ (function () {
     function SKU(wrap) {
         this.wrap = $(wrap);
         this.attrs = {};
@@ -266,7 +266,17 @@
                     tbody_html += '<td data-field="' + attr_val.id + '" class="attr-name">' + attr_val.value + '</td>';
                 });
                 tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span></div></td>';
-                tbody_html += '<td data-field="stock"><input value="" type="text" class="form-control"></td>';
+                tbody_html += '<td data-field="stock">' +
+                                '<div class="vs-checkbox-con vs-checkbox-primary" style="float: left;margin-top: 14px;">' +
+                                    '<input value="1" class="Dcat_Admin_Widgets_Checkbox" type="checkbox" name="" checked>' +
+                                    '<span class="vs-checkbox">' +
+                                        '<span class="vs-checkbox--check">' +
+                                        '<i class="vs-icon feather icon-check"></i>' +
+                                        '</span>' +
+                                    '</span>' +
+                                '</div>' +
+                                '<input value="" type="text" class="form-control" style="width: calc(100% - 30px);">' +
+                                '</td>';
                 tbody_html += '<td data-field="price"><input value="" type="text" class="form-control"></td>';
 
                 params.forEach((v) => {
