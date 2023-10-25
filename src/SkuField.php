@@ -37,6 +37,9 @@ class SkuField extends Field
             ];
         }
 
+        \Dcat\Admin\Widgets\Tooltip::make('.goods-format-tip')->red()
+            ->title('<p>1. 勾選規格名的單選框，並且上傳對應的繁體+英文圖片後。商品頁面對應規格會顯示為圖片</p><p>2. 勾選庫存的復選框後可以輸入對應的規格庫存，不勾選則表示不限制該對應規格的庫存</p><p>3. 勾選默認規格單選框後，商品詳情頁面會默認顯示該規格</p>');
+
         $this->script = <<< EOF
         window.DemoSku = new JadeKunSKU('{$this->getElementClassSelector()}');
 EOF;

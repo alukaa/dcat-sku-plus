@@ -58,6 +58,7 @@
         _this.wrap.find('.sku_attr_key_val tbody').on('change', 'input', _this.getSkuAttr.bind(_this));
         _this.wrap.find('.sku_edit_wrap tbody').on('keyup', 'input', _this.processSku.bind(_this));
         _this.wrap.find('.sku_edit_wrap tbody').on('change', 'input[type="radio"]', _this.processSku.bind(_this));
+        _this.wrap.find('.sku_edit_wrap tbody').on('change', 'input[type="checkbox"]', _this.processSku.bind(_this));
 
         // SKU图片上传
         _this.wrap.find('.sku_edit_wrap tbody').on('click', '.Js_sku_upload', function () {
@@ -267,7 +268,7 @@
                 });
                 tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span></div></td>';
                 tbody_html += '<td data-field="stock">' +
-                                '<div class="vs-checkbox-con vs-checkbox-primary" style="float: left;margin-top: 14px;">' +
+                                '<div class="vs-checkbox-con vs-checkbox-primary" style="float: left;margin-top: 14px;" title="限制庫存">' +
                                     '<input value="1" class="Dcat_Admin_Widgets_Checkbox" type="checkbox" name="" checked>' +
                                     '<span class="vs-checkbox">' +
                                         '<span class="vs-checkbox--check">' +
@@ -405,19 +406,36 @@
                     if (td.hasClass('attr-name')) {
                         item_sku.values.push(field)
                     }
-                    var currentInput = td.find('input');
-                    switch (currentInput.attr('type')) {
-                        case 'text': {
-                            item_sku[field] = currentInput.val() || td.text();
-                            break;
+
+                    if (field === 'stock') {
+                        var stockLimit = td.find('input[type="checkbox"]');
+                        var stockNum = td.find('input[type="text"]');
+
+                        if  (stockLimit.is(':checked')) {
+                            stockNum.removeAttr('readonly');
+                            item_sku[field] = 1;
+                            item_sku['stock_limit'] = 1;
+                        } else {
+                            stockNum.attr('readonly', 'readonly').val('');
+                            item_sku[field] = '';
+                            item_sku['stock_limit'] = 0;
                         }
-                        case 'radio': {
-                            item_sku[field] = currentInput.is(':checked');
-                            break;
-                        }
-                        default: {
-                            item_sku[field] = td.text();
-                            break;
+
+                    } else {
+                        var currentInput = td.find('input');
+                        switch (currentInput.attr('type')) {
+                            case 'text': {
+                                item_sku[field] = currentInput.val() || td.text();
+                                break;
+                            }
+                            case 'radio': {
+                                item_sku[field] = currentInput.is(':checked');
+                                break;
+                            }
+                            default: {
+                                item_sku[field] = td.text();
+                                break;
+                            }
                         }
                     }
                 }

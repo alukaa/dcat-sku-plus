@@ -1,5 +1,7 @@
 .sku_wrap {
     width: 140%;
+    position: relative;
+    z-index: 999999999999999999999;
 }
 
 .sku_wrap .sku_attr_key_val {

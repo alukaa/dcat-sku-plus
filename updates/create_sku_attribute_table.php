@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('jx_goods_sku_attribute', function (Blueprint $table) {
             $table->id();
+            $table->string('show_name')->comment('後台名稱');
             $table->string('attr_name_hk')->comment('規格名稱-繁體');
             $table->string('attr_name_en')->comment('規格名稱-英文');
             $table->enum('attr_type', ['checkbox', 'radio'])->comment('規格類型');

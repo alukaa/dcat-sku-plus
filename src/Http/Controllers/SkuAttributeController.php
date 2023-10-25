@@ -38,6 +38,7 @@ class SkuAttributeController extends AdminController
     {
         return Grid::make(new SkuAttribute(), function (Grid $grid) {
             $grid->id->sortable();
+            $grid->column('show_name', '後台名稱');
             $grid->column('attr_name_hk', '屬性名稱-繁體');
             $grid->column('attr_name_en', '屬性名稱-英文');
             $grid->column('attr_type', '屬性類型')
@@ -59,7 +60,7 @@ class SkuAttributeController extends AdminController
             $grid->disableViewButton();
 
             $grid->quickSearch('attr_name_hk')->placeholder('輸入規格名稱繁體搜索...');
-            
+
         });
     }
 
@@ -88,6 +89,7 @@ class SkuAttributeController extends AdminController
         $builder = SkuAttribute::with('valueInfo');
         return Form::make($builder, function (Form $form) {
             $form->display('id');
+            $form->text('show_name', '後台名稱')->required()->help('當存在兩個相同的屬性名稱，不同的屬性類型時用作區分，僅在後台展示');
             $form->text('attr_name_hk', '屬性名稱-繁體')->required();
             $form->text('attr_name_en', '屬性名稱-英文')->required();
             $form->radio('attr_type', '屬性類型')->options($this->attrType)->required();
