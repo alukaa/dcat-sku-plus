@@ -10,6 +10,7 @@
         this.currentSkuId = '';
         this.skuAttr = {};
         this.selectAttr = [];
+        this.showPicName = '';
         this.init();
     }
 
@@ -117,6 +118,12 @@
             let attr_keys = Object.keys(attr_names);
             let attr_keys_len = attr_keys.length;
 
+            for (var show_name in attr_names) {
+                if (attr_names[show_name].show_pic) {
+                    _this.showPicName= show_name;
+                }
+            }
+
             attr_keys.forEach(function (attr_key1) {
                 let sku = _this.skuAttributes.filter((res) => {
                     return res.attr_name == attr_key1;
@@ -125,7 +132,6 @@
                     _this.selectAttr.push(sku[0].id);
                 }
             });
-            console.log(_this.selectAttr);
 
             attr_keys.forEach(function (attr_key, index) {
                 // 规格名
@@ -232,9 +238,10 @@
             // 渲染表头
             let thead_html = '<tr>';
             attr_names.forEach(function (attr_name) {
+                var isChecked = attr_name === _this.showPicName ? 'checked="checked"' : '';
                 thead_html += '<th style="width: 100px">' +
                                   '<div class="vs-radio-con vs-radio-primary" style="width: fit-content;margin: 0 auto;" title="顯示規格圖片">' +
-                                    '<input value="0" name="switch-format-image" class="field_sex _normal_ Dcat_Admin_Widgets_Radio" type="radio">' +
+                                    '<input value="0" name="switch-format-image" class="field_sex _normal_ Dcat_Admin_Widgets_Radio" type="radio" ' + isChecked +'>' +
                                     '<span class="vs-radio vs-radio-">' +
                                         '<span class="vs-radio--border"></span>' +
                                         '<span class="vs-radio--circle"></span>' +
