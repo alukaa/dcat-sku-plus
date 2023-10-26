@@ -15,4 +15,9 @@ class SkuValue extends LocalizedModel
     protected $localizable = ['value'];
 
     protected $guarded = ['id'];
+
+    public static function getByAttrId(array $attrIds)
+    {
+        return self::whereIn('attr_id', $attrIds)->get();
+    }
 }

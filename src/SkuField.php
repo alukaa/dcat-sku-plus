@@ -32,7 +32,7 @@ class SkuField extends Field
             $skuAttributes[] = [
                 'id'         => $item->id,
                 'attr_type'  => $item->attr_type,
-                'attr_name'  => $item->attr_name,
+                'attr_name'  => $item->show_name,
                 'attr_value' => $valueList
             ];
         }

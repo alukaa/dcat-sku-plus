@@ -5,7 +5,7 @@
 
     <div class="{{$viewClass['field']}}">
         <div class="sku_wrap {{$class}}">
-            <input type="hidden" class="Js_sku_input" name="{{$name}}" value="{{old($column, $value)}}">
+            <input type="hidden" class="Js_sku_input" name="{{$name}}" value='@json($sku)'>
             <input type="hidden" class="Js_sku_params_input" value="{{$extra_column}}">
             <input type="hidden" class="upload_url" value="{{$uploadUrl}}">
             <input type="hidden" class="delete_url" value="{{$deleteUrl}}">

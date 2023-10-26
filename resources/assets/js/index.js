@@ -117,6 +117,16 @@
             let attr_keys = Object.keys(attr_names);
             let attr_keys_len = attr_keys.length;
 
+            attr_keys.forEach(function (attr_key1) {
+                let sku = _this.skuAttributes.filter((res) => {
+                    return res.attr_name == attr_key1;
+                });
+                if (sku.length > 0 && !_this.selectAttr.includes(sku[0].id)) {
+                    _this.selectAttr.push(sku[0].id);
+                }
+            });
+            console.log(_this.selectAttr);
+
             attr_keys.forEach(function (attr_key, index) {
                 // 规格名
                 let tr = tbody.find('tr').eq(index);
@@ -134,7 +144,18 @@
                         _this.currentSkuId = sku[0].id;
                         let attributeHtml = _this.getAttributeHtml(scopeAttrType, sku[0]);
                         let html = _this.getHtml(attributeHtml);
-                        _this.wrap.find('.sku_attr_key_val tbody').append(html);
+                        if (index === 0) {
+                            _this.wrap.find('.sku_attr_key_val tbody').html(html);
+                            _this.wrap.find('.sku_attr_key_val tbody').find('tr').eq(0).find('td:last-child').html('<span class="btn btn-primary Js_add_attr_name">添加</span>');
+
+                            // 重新绑定添加事件
+                            _this.wrap.find('.Js_add_attr_name').off('click').on('click', function () {
+                                _this.wrap.find('.sku_attr_key_val tbody').append(_this.getHtml());
+                            });
+                        } else {
+                            _this.wrap.find('.sku_attr_key_val tbody').append(html);
+                        }
+
                         break;
                     default:
                         tr.find('td:eq(0) input').val(attr_key);
@@ -142,7 +163,7 @@
                         let attr_val_td = tr.find('td:eq(1)');
                         let attr_vals = attr_names[attr_key];
                         let attr_vals_len = attr_vals.length;
-                        attr_vals.forEach(function (attr_val, index_2) {
+                        attr_vals.list.forEach(function (attr_val, index_2) {
                             attr_val_td.find('input').eq(index_2).val(attr_val);
                             if (index_2 < attr_vals_len - 1) {
                                 attr_val_td.find('.Js_add_attr_val').trigger('click');
@@ -250,7 +271,11 @@
                 return Array.prototype.reduce.call(arguments, function (a, b) {
                     const ret = [];
                     a.forEach(function (a) {
-                        b.forEach(function (b) {
+                        var tempB = b;
+                        if (typeof b === 'object' && b.hasOwnProperty('list')) {
+                            tempB = b.list;
+                        }
+                        tempB.forEach(function (b) {
                             ret.push(a.concat([b]));
                         });
                     });
@@ -312,13 +337,41 @@
                 // 填充数据
                 default_sku.forEach(function (item_sku, index) {
                     let tr = _this.wrap.find('.sku_edit_wrap tbody tr').eq(index);
+                    var uploadEle = tr.find('.Js_sku_upload');
+                    if (uploadEle.length > 1) {
+                        uploadEle = $(uploadEle[0]);
+                    }
                     Object.keys(item_sku).forEach(function (field) {
-                        if (field == 'pic' && item_sku[field].length > 0) {
-                            let html = '';
+                        if (field === 'pic' && item_sku[field].length > 0) {
                             item_sku[field].forEach(function (v) {
-                                html += '<div class="img"><img src="' + v.full_url + '"/><i class="feather icon-x" data-path="' + v.short_url + '"></i></div>';
+                                if (v.type === 'hk') {
+                                    uploadEle.before('<div class="img"><img src="' + v.full_url + '"/><i class="feather icon-x" data-path="' + v.short_url + '" data-type="'+ v.type +'"></i></div>');
+                                } else {
+                                    uploadEle.after('<div class="img"><img src="' + v.full_url + '"/><i class="feather icon-x" data-path="' + v.short_url + '" data-type="'+ v.type +'"></i></div>');
+                                }
                             });
-                            tr.find('.Js_sku_upload').before(html);
+                            item_sku[field].forEach(function (v) {
+                                // 需要移除之前的上传框
+                                tr.find('.Js_sku_upload[data-type="'+ v.type +'"]').remove();
+                            });
+                        } else if (field === 'stock') {
+                            var stockLimit1 = tr.find('td[data-field="' + field + '"] input[type="checkbox"]');
+                            var stockNum1 = tr.find('td[data-field="' + field + '"] input[type="text"]');
+                            // 是否选中
+
+                            if (item_sku.stock_limit) {
+                                stockLimit1.attr('checked', 'checked');
+                                stockNum1.removeAttr('readonly').val(item_sku[field]);
+                            } else {
+                                stockLimit1.removeAttr('checked');
+                                stockNum1.attr('readonly', 'readonly').val('');
+                            }
+                        } else if (field === 'is_default') {
+                            if (!item_sku[field]) {
+                                tr.find('td[data-field="' + field + '"] input[type="radio"]').removeAttr('checked');
+                            } else {
+                                tr.find('td[data-field="' + field + '"] input[type="radio"]').attr('checked', 'checked');
+                            }
                         } else {
                             let input = tr.find('td[data-field="' + field + '"] input');
                             if (input.length) {
@@ -375,7 +428,11 @@
             if (currentSwitchItem.length && currentSwitchItem.is(':checked')) {
                 isSwitch = 1;
             }
-            sku_json.attrs.push({show_pic: isSwitch, list: showAttrs[x]});
+            var itemShowAttr = showAttrs[x];
+            if (typeof itemShowAttr === 'object' && itemShowAttr.hasOwnProperty('list')) {
+                itemShowAttr = itemShowAttr.list;
+            }
+            sku_json.attrs.push({show_pic: isSwitch, list: itemShowAttr});
         }
 
         // 多规格
@@ -413,7 +470,7 @@
 
                         if  (stockLimit.is(':checked')) {
                             stockNum.removeAttr('readonly');
-                            item_sku[field] = 1;
+                            item_sku[field] = stockNum.val();
                             item_sku['stock_limit'] = 1;
                         } else {
                             stockNum.attr('readonly', 'readonly').val('');
@@ -570,7 +627,13 @@
                     attribute.attr_value.forEach(function (v) {
                         var vDetail = encodeURIComponent(JSON.stringify(v));
                         html += '<div class="vs-checkbox-con vs-checkbox-primary" style="margin-right: 16px"><input value="' + v.id + '" class="Dcat_Admin_Widgets_Checkbox" type="checkbox" name="' + v.value + '" data-value="'+ vDetail +'"';
-                        if (_this.currentAttributeValue.indexOf(v) >= 0) {
+                        var currentAttributeValue = _this.currentAttributeValue;
+                        if (typeof currentAttributeValue === 'object' && currentAttributeValue.hasOwnProperty('list')) {
+                            currentAttributeValue = currentAttributeValue.list;
+                            currentAttributeValue = currentAttributeValue.map(item => item.id);
+                        }
+
+                        if (currentAttributeValue.includes(v.id)) {
                             html += ' checked="checked"';
                         }
                         html += '><span class="vs-checkbox">' +
@@ -629,14 +692,14 @@
         }
         html += '><option value="">請選擇規格...</option>';
         skuAttributesArray.forEach(function (v, i) {
-            var isDisabled = _this.selectAttr.includes(v.id) ? 'disabled="disabled"' : ''
+            var isDisabled = _this.selectAttr.includes(v.id) && v.id !== _this.currentSkuId ? 'disabled="disabled"' : ''
             html += ' <option value="' + v.attr_type + '" data-idx="' + i + '" '+ isDisabled +'';
             if (innerHtml.length > 0 && v.id == _this.currentSkuId) {
                 html += ' selected="selected"';
             }
             html += '>' + v.attr_name + '</option>'
         });
-        html += '</select></td><td><div class="sku_attr_val_wrap"></div></td><td><span class="btn btn-default Js_remove_attr_name">移除</span></td></tr>';
+        html += '</select></td><td><div class="sku_attr_val_wrap">'+ (innerHtml.length > 0 ? innerHtml : '') +'</div></td><td><span class="btn btn-default Js_remove_attr_name">移除</span></td></tr>';
 
         return html;
     };

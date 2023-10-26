@@ -18,4 +18,9 @@ class SkuAttribute extends LocalizedModel
     {
         return $this->hasMany(SkuValue::class, 'attr_id', 'id');
     }
+
+    public static function getById(array $ids) 
+    {
+        return self::whereIn('id', $ids)->get();
+    }
 }
