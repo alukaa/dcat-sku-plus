@@ -1,4 +1,4 @@
- (function () {
+(function () {
     function SKU(wrap) {
         this.wrap = $(wrap);
         this.attrs = {};
@@ -223,7 +223,15 @@
         if (JSON.stringify(_this.attrs) !== JSON.stringify(attr)) {
             _this.attrs = attr;
             let params = _this.wrap.find('.Js_sku_params_input').val();
-            _this.SKUForm(null, JSON.parse(params))
+
+            let old_val = _this.wrap.find('.Js_sku_input').val();
+            let old_sku = null;
+            if (old_val) {
+                old_val = JSON.parse(old_val);
+                old_sku = old_val.sku;
+            }
+
+            _this.SKUForm(old_sku, JSON.parse(params));
         }
     };
 
@@ -240,15 +248,15 @@
             attr_names.forEach(function (attr_name) {
                 var isChecked = attr_name === _this.showPicName ? 'checked="checked"' : '';
                 thead_html += '<th style="width: 100px">' +
-                                  '<div class="vs-radio-con vs-radio-primary" style="width: fit-content;margin: 0 auto;" title="顯示規格圖片">' +
-                                    '<input value="0" name="switch-format-image" class="field_sex _normal_ Dcat_Admin_Widgets_Radio" type="radio" ' + isChecked +'>' +
-                                    '<span class="vs-radio vs-radio-">' +
-                                        '<span class="vs-radio--border"></span>' +
-                                        '<span class="vs-radio--circle"></span>' +
-                                    '</span>' +
-                                    '<span>'+ attr_name +'</span>' +
-                                  '</div>' +
-                              '</th>';
+                    '<div class="vs-radio-con vs-radio-primary" style="width: fit-content;margin: 0 auto;" title="顯示規格圖片">' +
+                    '<input value="0" name="switch-format-image" class="field_sex _normal_ Dcat_Admin_Widgets_Radio" type="radio" ' + isChecked +'>' +
+                    '<span class="vs-radio vs-radio-">' +
+                    '<span class="vs-radio--border"></span>' +
+                    '<span class="vs-radio--circle"></span>' +
+                    '</span>' +
+                    '<span>'+ attr_name +'</span>' +
+                    '</div>' +
+                    '</th>';
             });
             thead_html += '<th data-field="pic" style="width: 102px">圖片 </th>';
             thead_html += '<th data-field="stock">庫存 <input type="text" class="form-control"></th>';
@@ -300,16 +308,16 @@
                 });
                 tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span></div></td>';
                 tbody_html += '<td data-field="stock">' +
-                                '<div class="vs-checkbox-con vs-checkbox-primary" style="float: left;margin-top: 14px;" title="限制庫存">' +
-                                    '<input value="1" class="Dcat_Admin_Widgets_Checkbox" type="checkbox" name="" checked>' +
-                                    '<span class="vs-checkbox">' +
-                                        '<span class="vs-checkbox--check">' +
-                                        '<i class="vs-icon feather icon-check"></i>' +
-                                        '</span>' +
-                                    '</span>' +
-                                '</div>' +
-                                '<input value="" type="text" class="form-control" style="width: calc(100% - 30px);">' +
-                                '</td>';
+                    '<div class="vs-checkbox-con vs-checkbox-primary" style="float: left;margin-top: 14px;" title="限制庫存">' +
+                    '<input value="1" class="Dcat_Admin_Widgets_Checkbox" type="checkbox" name="" checked>' +
+                    '<span class="vs-checkbox">' +
+                    '<span class="vs-checkbox--check">' +
+                    '<i class="vs-icon feather icon-check"></i>' +
+                    '</span>' +
+                    '</span>' +
+                    '</div>' +
+                    '<input value="" type="text" class="form-control" style="width: calc(100% - 30px);">' +
+                    '</td>';
                 tbody_html += '<td data-field="price"><input value="" type="text" class="form-control"></td>';
 
                 params.forEach((v) => {
@@ -321,14 +329,14 @@
                         case 'radio': {
                             var isChecked = loopIndex === 0 ? 'checked="checked"' : '';
                             tbody_html += '<td data-field="' + v['field'] + '">' +
-                                            '<div class="vs-radio-con vs-radio-primary" style="width: fit-content;margin: 15px auto 0;" title="'+ v['name'] +'">' +
-                                                '<input value="0" name="'+ v['field'] +'" class="field_sex _normal_ Dcat_Admin_Widgets_Radio" type="radio" '+ isChecked +'>' +
-                                                '<span class="vs-radio vs-radio-">' +
-                                                    '<span class="vs-radio--border"></span>' +
-                                                    '<span class="vs-radio--circle"></span>' +
-                                                '</span>' +
-                                            '</div>' +
-                                           '</td>';
+                                '<div class="vs-radio-con vs-radio-primary" style="width: fit-content;margin: 15px auto 0;" title="'+ v['name'] +'">' +
+                                '<input value="0" name="'+ v['field'] +'" class="field_sex _normal_ Dcat_Admin_Widgets_Radio" type="radio" '+ isChecked +'>' +
+                                '<span class="vs-radio vs-radio-">' +
+                                '<span class="vs-radio--border"></span>' +
+                                '<span class="vs-radio--circle"></span>' +
+                                '</span>' +
+                                '</div>' +
+                                '</td>';
                             loopIndex += 1;
                             break;
                         }
@@ -343,49 +351,61 @@
             if (default_sku) {
                 // 填充数据
                 default_sku.forEach(function (item_sku, index) {
-                    let tr = _this.wrap.find('.sku_edit_wrap tbody tr').eq(index);
-                    var uploadEle = tr.find('.Js_sku_upload');
-                    if (uploadEle.length > 1) {
-                        uploadEle = $(uploadEle[0]);
-                    }
-                    Object.keys(item_sku).forEach(function (field) {
-                        if (field === 'pic' && item_sku[field].length > 0) {
-                            item_sku[field].forEach(function (v) {
-                                if (v.type === 'hk') {
-                                    uploadEle.before('<div class="img"><img src="' + v.full_url + '"/><i class="feather icon-x" data-path="' + v.short_url + '" data-type="'+ v.type +'"></i></div>');
-                                } else {
-                                    uploadEle.after('<div class="img"><img src="' + v.full_url + '"/><i class="feather icon-x" data-path="' + v.short_url + '" data-type="'+ v.type +'"></i></div>');
-                                }
-                            });
-                            item_sku[field].forEach(function (v) {
-                                // 需要移除之前的上传框
-                                tr.find('.Js_sku_upload[data-type="'+ v.type +'"]').remove();
-                            });
-                        } else if (field === 'stock') {
-                            var stockLimit1 = tr.find('td[data-field="' + field + '"] input[type="checkbox"]');
-                            var stockNum1 = tr.find('td[data-field="' + field + '"] input[type="text"]');
-                            // 是否选中
-
-                            if (item_sku.stock_limit) {
-                                stockLimit1.attr('checked', 'checked');
-                                stockNum1.removeAttr('readonly').val(item_sku[field]);
-                            } else {
-                                stockLimit1.removeAttr('checked');
-                                stockNum1.attr('readonly', 'readonly').val('');
-                            }
-                        } else if (field === 'is_default') {
-                            if (!item_sku[field]) {
-                                tr.find('td[data-field="' + field + '"] input[type="radio"]').removeAttr('checked');
-                            } else {
-                                tr.find('td[data-field="' + field + '"] input[type="radio"]').attr('checked', 'checked');
-                            }
-                        } else {
-                            let input = tr.find('td[data-field="' + field + '"] input');
-                            if (input.length) {
-                                input.val(item_sku[field]);
-                            }
+                    var trLen = _this.wrap.find('.sku_edit_wrap tbody tr');
+                    var trIndex = -1;
+                    for (var i = 0; i < trLen.length; i++) {
+                        var filedOne = $(trLen[i]).find('td.attr-name').eq(0).attr('data-field');
+                        var filedTwo = $(trLen[i]).find('td.attr-name').eq(1).attr('data-field');
+                        if (item_sku.values.includes(filedOne) && item_sku.values.includes(filedTwo)) {
+                            trIndex = i;
                         }
-                    })
+                    }
+
+                    if (trIndex >= 0) {
+                        let tr = _this.wrap.find('.sku_edit_wrap tbody tr').eq(trIndex);
+                        var uploadEle = tr.find('.Js_sku_upload');
+                        if (uploadEle.length > 1) {
+                            uploadEle = $(uploadEle[0]);
+                        }
+                        Object.keys(item_sku).forEach(function (field, indexNumber) {
+                            if (field === 'pic' && item_sku[field].length > 0) {
+                                item_sku[field].forEach(function (v) {
+                                    if (v.type === 'hk') {
+                                        uploadEle.before('<div class="img"><img src="' + v.full_url + '"/><i class="feather icon-x" data-path="' + v.short_url + '" data-type="'+ v.type +'"></i></div>');
+                                    } else {
+                                        uploadEle.after('<div class="img"><img src="' + v.full_url + '"/><i class="feather icon-x" data-path="' + v.short_url + '" data-type="'+ v.type +'"></i></div>');
+                                    }
+                                });
+                                item_sku[field].forEach(function (v) {
+                                    // 需要移除之前的上传框
+                                    tr.find('.Js_sku_upload[data-type="'+ v.type +'"]').remove();
+                                });
+                            } else if (field === 'stock') {
+                                var stockLimit1 = tr.find('td[data-field="' + field + '"] input[type="checkbox"]');
+                                var stockNum1 = tr.find('td[data-field="' + field + '"] input[type="text"]');
+                                // 是否选中
+
+                                if (item_sku.stock_limit) {
+                                    stockLimit1.attr('checked', 'checked');
+                                    stockNum1.removeAttr('readonly').val(item_sku[field]);
+                                } else {
+                                    stockLimit1.removeAttr('checked');
+                                    stockNum1.attr('readonly', 'readonly').val('');
+                                }
+                            } else if (field === 'is_default') {
+                                if (!item_sku[field]) {
+                                    tr.find('td[data-field="' + field + '"] input[type="radio"]').removeAttr('checked');
+                                } else {
+                                    tr.find('td[data-field="' + field + '"] input[type="radio"]').attr('checked', 'checked');
+                                }
+                            } else {
+                                let input = tr.find('td[data-field="' + field + '"] input');
+                                if (input.length) {
+                                    input.val(item_sku[field]);
+                                }
+                            }
+                        })
+                    }
                 });
             }
         }
