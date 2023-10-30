@@ -699,7 +699,7 @@
                             currentAttributeValue = currentAttributeValue.map(item => item.id);
                         }
 
-                        if (currentAttributeValue.indexOf(v) >= 0) {
+                        if (currentAttributeValue.indexOf(v.id) >= 0) {
                             html += ' checked="checked"';
                         }
                         html += '><span class="vs-radio">' +
