@@ -691,7 +691,7 @@
                     attribute.attr_value.forEach(function (v) {
                         var vDetail = encodeURIComponent(JSON.stringify(v));
                         html += '<div class="vs-radio-con vs-radio-primary" style="margin-right: 16px">' +
-                            '<input value="' + v.id + '" class="Dcat_Admin_Widgets_Radio" type="radio" name="' + v.value + '" data-value="'+ vDetail +'"';
+                            '<input value="' + v.id + '" class="Dcat_Admin_Widgets_Radio" type="radio" name="' + v.attr_id + '" data-value="'+ vDetail +'"';
 
                         var currentAttributeValue = _this.currentAttributeValue;
                         if (typeof currentAttributeValue === 'object' && currentAttributeValue.hasOwnProperty('list')) {
