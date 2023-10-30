@@ -354,9 +354,20 @@
                     var trLen = _this.wrap.find('.sku_edit_wrap tbody tr');
                     var trIndex = -1;
                     for (var i = 0; i < trLen.length; i++) {
-                        var filedOne = $(trLen[i]).find('td.attr-name').eq(0).attr('data-field');
-                        var filedTwo = $(trLen[i]).find('td.attr-name').eq(1).attr('data-field');
-                        if (item_sku.values.includes(filedOne) && item_sku.values.includes(filedTwo)) {
+                        var filedNameFiled = $(trLen[i]).find('td.attr-name');
+                        var filedNameValue = [];
+                        var fieldMatch = true;
+                        for (var j = 0; j < filedNameFiled.length; j++) {
+                            var filedOne = $(trLen[i]).find('td.attr-name').eq(j).attr('data-field');
+                            filedNameValue.push(filedOne);
+                        }
+
+                        for (var k = 0; k < filedNameValue.length; k++) {
+                            if (!item_sku.values.includes(filedNameValue[k])) {
+                                fieldMatch = false;
+                            }
+                        }
+                        if (fieldMatch) {
                             trIndex = i;
                         }
                     }
