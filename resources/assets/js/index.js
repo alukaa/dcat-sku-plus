@@ -692,7 +692,14 @@
                         var vDetail = encodeURIComponent(JSON.stringify(v));
                         html += '<div class="vs-radio-con vs-radio-primary" style="margin-right: 16px">' +
                             '<input value="' + v.id + '" class="Dcat_Admin_Widgets_Radio" type="radio" name="' + v.value + '" data-value="'+ vDetail +'"';
-                        if (_this.currentAttributeValue.indexOf(v) >= 0) {
+
+                        var currentAttributeValue = _this.currentAttributeValue;
+                        if (typeof currentAttributeValue === 'object' && currentAttributeValue.hasOwnProperty('list')) {
+                            currentAttributeValue = currentAttributeValue.list;
+                            currentAttributeValue = currentAttributeValue.map(item => item.id);
+                        }
+
+                        if (currentAttributeValue.indexOf(v) >= 0) {
                             html += ' checked="checked"';
                         }
                         html += '><span class="vs-radio">' +
