@@ -359,11 +359,14 @@
                         var fieldMatch = true;
                         for (var j = 0; j < filedNameFiled.length; j++) {
                             var filedOne = $(trLen[i]).find('td.attr-name').eq(j).attr('data-field');
-                            filedNameValue.push(filedOne);
+                            filedNameValue.push(parseInt(filedOne));
                         }
 
                         for (var k = 0; k < filedNameValue.length; k++) {
-                            if (!item_sku.values.includes(filedNameValue[k])) {
+                            var itemSkuValues = item_sku.values.map(function (item11) {
+                                return parseInt(item11);
+                            });
+                            if (!itemSkuValues.includes(filedNameValue[k])) {
                                 fieldMatch = false;
                             }
                         }
