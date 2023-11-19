@@ -70,7 +70,13 @@
     margin-top: 5px;
 }
 
-.sku_wrap .sku_edit_wrap tr td .icon-upload-cloud, .sku_wrap .sku_edit_wrap tr td .icon-x {
+.sku_wrap .sku_edit_wrap tr td .icon-upload-cloud {
+    font-size: 18px;
+    line-height: 18px;
+    font-weight: bold;
+}
+
+.sku_wrap .sku_edit_wrap tr td .icon-x {
     font-size: 36px;
     line-height: 36px;
     font-weight: bold;
