@@ -93,18 +93,18 @@
                             _this.processSku();
                         }
                     }
-                })
+                });
             });
 
             return false;
         });
 
-        _this.wrap.find('.sku_edit_wrap tbody').on('mouseenter', '.sku_img img', function () {
-            $(this).next('.icon-x').show();
+        _this.wrap.find('.sku_edit_wrap tbody').on('mouseenter', '.sku_img .img', function () {
+            $(this).find('.icon-x').show();
         });
 
-        _this.wrap.find('.sku_edit_wrap tbody').on('mouseleave', '.sku_img img', function () {
-            $(this).next('.icon-x').hide();
+        _this.wrap.find('.sku_edit_wrap tbody').on('mouseleave', '.sku_img .img', function () {
+            $(this).find('.icon-x').hide();
         });
 
         let old_val = _this.wrap.find('.Js_sku_input').val();
