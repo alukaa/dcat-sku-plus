@@ -51,7 +51,7 @@
         // 绑定移除属性名事件
         _this.wrap.find('.sku_attr_key_val').on('click', '.Js_remove_attr_name', function () {
             $(this).closest('tr').remove();
-            _this.getSkuAttr()
+            _this.getSkuAttr();
             _this.syncData();
         });
 
@@ -61,42 +61,47 @@
         _this.wrap.find('.sku_edit_wrap tbody').on('change', 'input[type="radio"]', _this.processSku.bind(_this));
         _this.wrap.find('.sku_edit_wrap tbody').on('change', 'input[type="checkbox"]', _this.processSku.bind(_this));
 
+
         // SKU图片上传
         _this.wrap.find('.sku_edit_wrap tbody').on('click', '.Js_sku_upload', function () {
-            _this.upload($(this));
+            var obj = this;
+            console.log(obj);
+            $('.Js_sku_upload').MediaSelector({
+                label: '商品規格圖',
+                config: {
+                    sortable: false,
+                    limit: 1,
+                    rootPath: window.mediaUploadPath,
+                    types: ['image'],
+                    move: JSON.stringify({ dir: 'media',  fileNameIsEncrypt: true}),
+                    fileDisplayClassBack: function (data) {
+
+                        var dataType = $(obj).attr('data-type');
+                        $(obj).before('<div class="img"><img src="' + data.url + '"/><i class="feather icon-x" data-path="' + data.path + '" data-type="'+ dataType +'"></i></div>');
+                        $(obj).remove();
+                        _this.processSku();
+
+                        console.log(222, data);
+                    }
+                },
+                grouplist: window.mediaGroupList,
+                selectList: { 'image': '\u5716\u7247' },
+            }).showMediaWindow();
         });
 
         // 删除图片
         _this.wrap.find('.sku_edit_wrap tbody').on('click', '.sku_img .icon-x', function () {
             let that = $(this);
-            Dcat.confirm('確定要刪除圖片嗎？', null, function () {
-                $.ajax({
-                    type: "POST",
-                    url: _this.deleteUrl,
-                    data: {path: that.data('path')},
-                    headers: {
-                        Accept: "application/json"
-                    },
-                    success: function (res) {
-                        let method = res.code == 200 ? 'success' : 'error';
-                        Dcat[method](res.message);
-                        if (res.code == 200) {
-                            // 补全剩余上传按钮
-                            var dataType = that.data('type');
-                            if (dataType === 'en') {
-                                that.parent().after('<span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span>');
-                            } else {
-                                that.parent().before('<span class="Js_sku_upload" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span>');
-                            }
+            // 补全剩余上传按钮
+            var dataType = that.data('type');
+            if (dataType === 'en') {
+                that.parent().after('<span class="Js_sku_upload media_btn_1" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span>');
+            } else {
+                that.parent().before('<span class="Js_sku_upload media_btn_1" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span>');
+            }
 
-                            that.parent('div').remove();
-                            _this.processSku();
-                        }
-                    }
-                });
-            });
-
-            return false;
+            that.parent('div').remove();
+            _this.processSku();
         });
 
         _this.wrap.find('.sku_edit_wrap tbody').on('mouseenter', '.sku_img .img', function () {
@@ -306,7 +311,7 @@
                 sku_item.forEach(function (attr_val, index) {
                     tbody_html += '<td data-field="' + attr_val.id + '" class="attr-name">' + attr_val.value + '</td>';
                 });
-                tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span></div></td>';
+                tbody_html += '<td data-field="pic"><div class="sku_img"><span class="Js_sku_upload media_btn_1" title="繁體圖片" data-type="hk"><i class="feather icon-upload-cloud"></i></span><span class="Js_sku_upload media_btn_1" style="margin-left: 2px;" title="英文圖片" data-type="en"><i class="feather icon-upload-cloud"></i></span></div></td>';
                 tbody_html += '<td data-field="stock">' +
                     '<div class="vs-checkbox-con vs-checkbox-primary" style="float: left;margin-top: 14px;" title="限制庫存">' +
                     '<input value="1" class="Dcat_Admin_Widgets_Checkbox" type="checkbox" name="" checked>' +
